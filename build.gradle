@@ -1,0 +1,64 @@
+//plugins {
+//    id 'java'
+//}
+//
+//group 'org.example'
+//version '1.0-SNAPSHOT'
+//
+//repositories {
+//    mavenCentral()
+//}
+//
+//dependencies {
+//    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+//    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+//}
+//
+//test {
+//    useJUnitPlatform()
+//}
+
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.10'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 17
+
+repositories {
+    mavenCentral()
+}
+
+//dependencies {
+//    testCompile group: 'junit', name: 'junit', version: '4.12'
+//}
+//
+//
+//test {
+//    systemProperty "java.library.path", file("${project(":hello").buildDir}/lib/main/debug").absolutePath
+//}
+
+//dependencies {
+//    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+//    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+//}
+
+//test {
+//    useJUnitPlatform()
+//}
+
+javafx{
+    modules = [ 'javafx.controls', 'javafx.base', 'javafx.graphics' ]
+}
+
+//test.dependsOn  ':hello:linkDebug'
+
+mainClassName = 'he1027_lab5.Main'
+run {
+    systemProperty "java.library.path", file("${project(":hello").buildDir}/lib/main/debug").absolutePath
+}
+run.dependsOn ':hello:linkDebug'
