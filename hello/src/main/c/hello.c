@@ -4,25 +4,20 @@
 #include <time.h>
 
 JNIEXPORT void JNICALL
-Java_he1027_1lab5_HelloWorld_print5(JNIEnv *env, jobject obj, jobjectArray arr, jint windows, jint levels)
+Java_he1027_1lab5_HelloWorld_print5(JNIEnv *env, jobject obj, jintArray arr, jintArray dstArr, jint window, jint level)
 {
 
 //    clock_t start, end;
 //    double cpu_time_used;
 //    start = clock();
-    // TODO: ändra till endimensionell array
-    const jint iLevel = levels;
-    const jint iWindow = windows;
-    unsigned int iSlope = (255 << 8) / (iWindow - iLevel);
-    const uint64_t shift = 8;
-    jintArray intArray = (jintArray) (*env)->GetObjectArrayElement(env, arr, 0);
-    jsize len1 = (*env)->GetArrayLength(env, arr);
-    jsize len2 = (*env)->GetArrayLength(env, intArray);
-    jint *array;
+    jsize len = (*env)->GetArrayLength(env, arr);
+    jint *array = (*env)->GetIntArrayElements(env, arr, 0);
+    jint *dstArray = (*env)->GetIntArrayElements(env, dstArr, 0);
 
-    __m256i level = _mm256_set1_epi8(iLevel); // set level
-    __m256i window = _mm256_set1_epi8(iWindow); // set window
-    __m256i slope = _mm256_set1_epi16(iSlope); // set slope
+//    printf("\n%d", len);
+    __m256i mLevel = _mm256_set1_epi8( level );
+    __m256i mWindow = _mm256_set1_epi8( window );
+    __m256i mSlope = _mm256_set1_epi16( (255 << 8) / ( window - level ) );
 
     __m256i levelMask;
     __m256i windowMask;
@@ -34,77 +29,167 @@ Java_he1027_1lab5_HelloWorld_print5(JNIEnv *env, jobject obj, jobjectArray arr, 
     __m256i tmp1;
     __m128i m128_v0;
     __m128i m128_v1;
-//    __m256i permMask = _mm256_set_epi32( 0b111, 0b110, 0b011, 0b010, 0b101, 0b100, 0b001, 0b000 );
+    __m128i shift = _mm_set1_epi64((__m64) (uint64_t) 8);
+    __m256i permMask = _mm256_set_epi32( 0b111, 0b110, 0b011, 0b010, 0b101, 0b100, 0b001, 0b000 );
 
-//    jint *array = (*env)->GetIntArrayElements(env, arr, 0);
-    for (int j = 0; j < len1; j++) {
-        intArray = (jintArray) (*env)->GetObjectArrayElement(env, arr, j);
-        array = (*env)->GetIntArrayElements(env, intArray, 0);
+    for (int i = 0; i < len/8; i++) {
+        pixel = _mm256_load_si256( &array[i*8] );
 
-        for (int i = 0; i < len2/8; i++) {
-            pixel = _mm256_maskload_epi32(&array[i*8], _mm256_set1_epi32(0x80000000));
-            levelMask = _mm256_max_epu8(pixel, level); // compensate for unsigned
-            levelMask = _mm256_cmpeq_epi8(pixel, levelMask); // compare to result from above
+        // Mask and set bits with value below level
+        levelMask = _mm256_max_epu8( pixel, mLevel );
+        levelMask = _mm256_cmpeq_epi8( pixel, levelMask );
+        result = _mm256_and_si256( pixel, levelMask );
 
-            result = _mm256_and_si256(pixel, levelMask); // set pixels
+        // Mask and set bits with value above window
+        windowMask = _mm256_max_epu8( pixel, mWindow );
+        windowMask = _mm256_cmpeq_epi8( pixel, windowMask );
+        result = _mm256_or_si256( result, windowMask );
 
-            windowMask = _mm256_max_epu8(pixel, window); // compensate for unsigned
-            windowMask = _mm256_cmpeq_epi8(pixel, windowMask); // compare to result from above
+        // Mask bits for multiplication
+        wiLeXOr = _mm256_xor_si256( levelMask, windowMask );
 
-            result = _mm256_or_si256(result, windowMask); // set pixels
+        // Prepare contrast change by - level
+        tmp = _mm256_and_si256( result, wiLeXOr );
+        tmp = _mm256_subs_epu8( tmp, mLevel ); // - level
 
-            wiLeXOr = _mm256_xor_si256(levelMask, windowMask); // mask for contrast adjustment
+        // clear targeted pixels
+        result = _mm256_and_si256( result, ~wiLeXOr );
 
-            // change contrast
-            tmp = _mm256_and_si256(result, wiLeXOr);
-            tmp = _mm256_subs_epu8( tmp, level ); // - level
+        // Extract 4 bits for multiplication  // Can skip and only adjust 4 pixels each loop?
+        m128_v0 = _mm256_extracti128_si256 ( tmp, 0 );
+        m128_v1 = _mm256_extracti128_si256 ( tmp, 1 );
 
+        // Unpack from 8bit to 16bit.
+        // Change color values, shifted integer multiplication to avoid floats
+        tmp = _mm256_cvtepu8_epi16( m128_v0 );
+        tmp = _mm256_mullo_epi16( mSlope, tmp );
+        tmp = _mm256_srl_epi16( tmp, shift );
+        tmp1 = _mm256_cvtepu8_epi16( m128_v1 );
+        tmp1 = _mm256_mullo_epi16( mSlope, tmp1 );
+        tmp1 = _mm256_srl_epi16( tmp1, shift );
 
-            // clear targeted pixels
-        //    wiLeXOr = _mm256_sub_epi8(_mm256_set1_epi8(0xFF), wiLeXOr); // invert mask
-            result = _mm256_and_si256(result, ~wiLeXOr); // clear targeted pixels
+        // Repack from 16- to 8-bit, no loss in precision since all relevant values are sub 255
+        tmp = _mm256_packus_epi16( tmp, tmp1 );
+        // Reorder from repack
+        tmp = _mm256_permutevar8x32_epi32(tmp, permMask);
 
-            m128_v0 = _mm256_extracti128_si256 ( tmp, 0 );
-            m128_v1 = _mm256_extracti128_si256 ( tmp, 1 );
+        // Clear irrelevant bits and set new values of result
+        tmp = _mm256_and_si256( tmp, wiLeXOr );
+        result = _mm256_or_si256( result, tmp );
 
-
-            tmp = _mm256_cvtepu8_epi16( m128_v0 );
-            tmp = _mm256_mullo_epi16(slope, tmp);
-            tmp = _mm256_srl_epi16(tmp, _mm_set1_epi64((__m64) shift));
-    //        m128_v0 = _mm256_extracti128_si256 ( tmp, 1 );
-            tmp1 = _mm256_cvtepu8_epi16( m128_v1 );
-            tmp1 = _mm256_mullo_epi16(slope, tmp1);
-            tmp1 = _mm256_srl_epi16(tmp1, _mm_set1_epi64((__m64) shift));
-
-            tmp = _mm256_packus_epi16(tmp, tmp1);
-            // sortera
-//            tmp = _mm256_permutevar8x32_epi32(tmp, permMask);
-            // TODO: vad är detta?
-        //    __m256i result2 = _mm256_unpackhi_epi8(tmp, tmp1);
-        //    __m256i result2 = tmp;
-
-        //    wiLeXOr = _mm256_sub_epi8(_mm256_set1_epi8(0xFF), wiLeXOr);
-            tmp = _mm256_and_si256(tmp, wiLeXOr);
-            result = _mm256_or_si256(result, tmp);
-
-            // TODO: sist i varje inre loop store i array[i]
-            _mm256_maskstore_epi32(&array[i*8], _mm256_set1_epi32(0x80000000), result);
-        }
-        // TODO: sist i varje yttre loop sätt yttre array
-        (*env)->SetIntArrayRegion(env, intArray, 0, len2, array);
-
-//        (*env)->SetObjectArrayElement(env, arr, (jsize) j, intArray);
+        _mm256_stream_si256( &dstArray[i*8], result );
     }
-
-
-//    return arr;
-
+    (*env)->SetIntArrayRegion( env, dstArr, 0, len, dstArray );
 
 //    end = clock();
 //    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 //    printf("%f\n", cpu_time_used);
     return;
 }
+
+
+//JNIEXPORT void JNICALL
+//Java_he1027_1lab5_HelloWorld_print5(JNIEnv *env, jobject obj, jobjectArray arr, jint windows, jint levels)
+//{
+//
+////    clock_t start, end;
+////    double cpu_time_used;
+////    start = clock();
+//    // TODO: ändra till endimensionell array
+//    const jint iLevel = levels;
+//    const jint iWindow = windows;
+//    unsigned int iSlope = (255 << 8) / (iWindow - iLevel);
+//    const uint64_t shift = 8;
+//    jintArray intArray = (jintArray) (*env)->GetObjectArrayElement(env, arr, 0);
+//    jsize len1 = (*env)->GetArrayLength(env, arr);
+//    jsize len2 = (*env)->GetArrayLength(env, intArray);
+//    jint *array;
+//
+//    __m256i level = _mm256_set1_epi8(iLevel); // set level
+//    __m256i window = _mm256_set1_epi8(iWindow); // set window
+//    __m256i slope = _mm256_set1_epi16(iSlope); // set slope
+//
+//    __m256i levelMask;
+//    __m256i windowMask;
+//    __m256i wiLeXOr;
+//    __m256i result;
+//    __m256i pixel;
+//
+//    __m256i tmp;
+//    __m256i tmp1;
+//    __m128i m128_v0;
+//    __m128i m128_v1;
+//    __m256i permMask = _mm256_set_epi32( 0b111, 0b110, 0b011, 0b010, 0b101, 0b100, 0b001, 0b000 );
+//
+////    jint *array = (*env)->GetIntArrayElements(env, arr, 0);
+//    for (int j = 0; j < len1; j++) {
+//        intArray = (jintArray) (*env)->GetObjectArrayElement(env, arr, j);
+//        array = (*env)->GetIntArrayElements(env, intArray, 0);
+//
+//        for (int i = 0; i < len2/8; i++) {
+//            pixel = _mm256_maskload_epi32(&array[i*8], _mm256_set1_epi32(0x80000000));
+//            levelMask = _mm256_max_epu8(pixel, level); // compensate for unsigned
+//            levelMask = _mm256_cmpeq_epi8(pixel, levelMask); // compare to result from above
+//
+//            result = _mm256_and_si256(pixel, levelMask); // set pixels
+//
+//            windowMask = _mm256_max_epu8(pixel, window); // compensate for unsigned
+//            windowMask = _mm256_cmpeq_epi8(pixel, windowMask); // compare to result from above
+//
+//            result = _mm256_or_si256(result, windowMask); // set pixels
+//
+//            wiLeXOr = _mm256_xor_si256(levelMask, windowMask); // mask for contrast adjustment
+//
+//            // change contrast
+//            tmp = _mm256_and_si256(result, wiLeXOr);
+//            tmp = _mm256_subs_epu8( tmp, level ); // - level
+//
+//
+//            // clear targeted pixels
+//        //    wiLeXOr = _mm256_sub_epi8(_mm256_set1_epi8(0xFF), wiLeXOr); // invert mask
+//            result = _mm256_and_si256(result, ~wiLeXOr); // clear targeted pixels
+//
+//            m128_v0 = _mm256_extracti128_si256 ( tmp, 0 );
+//            m128_v1 = _mm256_extracti128_si256 ( tmp, 1 );
+//
+//
+//            tmp = _mm256_cvtepu8_epi16( m128_v0 );
+//            tmp = _mm256_mullo_epi16(slope, tmp);
+//            tmp = _mm256_srl_epi16(tmp, _mm_set1_epi64((__m64) shift));
+//    //        m128_v0 = _mm256_extracti128_si256 ( tmp, 1 );
+//            tmp1 = _mm256_cvtepu8_epi16( m128_v1 );
+//            tmp1 = _mm256_mullo_epi16(slope, tmp1);
+//            tmp1 = _mm256_srl_epi16(tmp1, _mm_set1_epi64((__m64) shift));
+//
+//            tmp = _mm256_packus_epi16(tmp, tmp1);
+//            // sortera
+//            tmp = _mm256_permutevar8x32_epi32(tmp, permMask);
+//            // TODO: vad är detta?
+//        //    __m256i result2 = _mm256_unpackhi_epi8(tmp, tmp1);
+//        //    __m256i result2 = tmp;
+//
+//        //    wiLeXOr = _mm256_sub_epi8(_mm256_set1_epi8(0xFF), wiLeXOr);
+//            tmp = _mm256_and_si256(tmp, wiLeXOr);
+//            result = _mm256_or_si256(result, tmp);
+//
+//            // TODO: sist i varje inre loop store i array[i]
+//            _mm256_maskstore_epi32(&array[i*8], _mm256_set1_epi32(0x80000000), result);
+//        }
+//        // TODO: sist i varje yttre loop sätt yttre array
+//        (*env)->SetIntArrayRegion(env, intArray, 0, len2, array);
+//
+////        (*env)->SetObjectArrayElement(env, arr, (jsize) j, intArray);
+//    }
+//
+//
+////    return arr;
+//
+//
+////    end = clock();
+////    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+////    printf("%f\n", cpu_time_used);
+//    return;
+//}
 
 
 

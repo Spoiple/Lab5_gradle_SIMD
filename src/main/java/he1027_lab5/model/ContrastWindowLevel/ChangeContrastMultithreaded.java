@@ -30,7 +30,7 @@ public class ChangeContrastMultithreaded implements ImageProcessing {
     @Override
     public IntBuffer processImage(IntBuffer originalImg, int w, int h) {
 
-//        long time = System.currentTimeMillis();
+        long time = System.currentTimeMillis();
 //        int[][] matrix = new int[originalImg.length][originalImg[0].length];
         IntBuffer result = IntBuffer.allocate(w*h);
         Thread[] threads = new Thread[noOfThreads];
@@ -47,7 +47,7 @@ public class ChangeContrastMultithreaded implements ImageProcessing {
         } catch (Exception e) {
 
         }
-//        System.out.println(System.currentTimeMillis() - time);
+        System.out.println(System.currentTimeMillis() - time);
         return result;
     }
 
