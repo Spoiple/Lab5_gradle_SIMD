@@ -13,7 +13,7 @@ public class BlurImage implements ImageProcessing {
     }
 
     @Override
-    public IntBuffer processImage(IntBuffer originalImg, int w, int h) {
+    public void processImage(int[] src, int[] dst, int w, int h) {
         // TODO
 //        int[][] matrix = new int[originalImg.length][originalImg[0].length];
 //
@@ -22,7 +22,6 @@ public class BlurImage implements ImageProcessing {
 //                matrix[x][y] = blur(x, y, boxSize);
 //            }
 //        }
-        return originalImg;
     }
 
     public int blur(int x, int y, int boxSize) {

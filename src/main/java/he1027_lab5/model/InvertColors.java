@@ -9,11 +9,11 @@ public class InvertColors implements ImageProcessing {
 
     /**
      * This override method inverts the rgb bit pattern of an image pixel matrix.
-     * @param originalImg converted to a pixel matrix.
+     * @param src converted to a pixel matrix.
      * @return inverted matrix.
      */
     @Override
-    public IntBuffer processImage(IntBuffer originalImg, int w, int h) {
+    public void processImage(int[] src, int[] dst, int w, int h) {
         // TODO
 //        int[][] matrix = new int[originalImg.length][originalImg[0].length];
 //
@@ -24,6 +24,5 @@ public class InvertColors implements ImageProcessing {
 //                matrix[x][y] = alpha | rgb;
 //            }
 //        }
-        return originalImg;
     }
 }

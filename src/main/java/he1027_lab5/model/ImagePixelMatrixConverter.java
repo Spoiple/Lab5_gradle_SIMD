@@ -9,15 +9,13 @@ import java.nio.IntBuffer;
  */
 public class ImagePixelMatrixConverter {
 
-    static IntBuffer buffer;
-
     private ImagePixelMatrixConverter() {
     }
 
     /**
      * Method for converting an image to a pixel matrix.
      * @param image Image object to extract 2D pixel matrix from
-     * @returns a matrix of the image pixels.
+     * @return a matrix of the image pixels.
      */
     public static IntBuffer getPixelMatrix(Image image) {
         long time = System.currentTimeMillis();
@@ -26,7 +24,7 @@ public class ImagePixelMatrixConverter {
         System.out.println(width + " " + height);
 
 //        int[][] pixelMatrix = new int[height][width];
-        buffer = IntBuffer.allocate(height*width);
+        IntBuffer buffer = IntBuffer.allocate(height*width);
         PixelReader reader = image.getPixelReader();
         reader.getPixels(0, 0, width, height, WritablePixelFormat.getIntArgbInstance(), buffer, width);
         System.out.println(System.currentTimeMillis() - time + " ms convert to matrix buffer");
@@ -88,19 +86,16 @@ public class ImagePixelMatrixConverter {
 
     /**
      * Method for converting a pixel matrix to an image.
-     * @param buffer
-     * @param w
-     * @param h
-     * @return
+     * @param w width of image
+     * @param h height of image
+     * @return new image
      */
     public static Image getImage(IntBuffer buffer, int w, int h)  {
         long time = System.currentTimeMillis();
-        int width = w;
-        int height = h;
 
-        WritableImage image = new WritableImage(width, height);
+        WritableImage image = new WritableImage(w, h);
         PixelWriter writer = image.getPixelWriter();
-        writer.setPixels(0, 0, width, height, PixelFormat.getIntArgbInstance(), buffer, width);
+        writer.setPixels(0, 0, w, h, PixelFormat.getIntArgbInstance(), buffer, w);
         System.out.println(System.currentTimeMillis() - time + " ms convert to image buffer");
 //        for (int x = 0; x < image.getWidth(); x++) {
 //            for (int y = 0; y < image.getHeight(); y++) {

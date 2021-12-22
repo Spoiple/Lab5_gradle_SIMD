@@ -16,9 +16,7 @@ public class Main extends Application {
         MainView mainView = new MainView(new ImageProcessingModel());
 //        mainView.setMinWidth(600);
         Scene scene = new Scene(mainView, 800, 550);
-        stage.setOnCloseRequest(event -> {
-            ThreadPool.getThreadPool().shutdown();
-        });
+        stage.setOnCloseRequest(event -> ThreadPool.getThreadPool().shutdown());
         stage.setMinWidth(800);
         stage.setMinHeight(550);
         stage.setTitle("PhotoEditor 2021!");

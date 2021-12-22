@@ -22,11 +22,11 @@ public class ChangeContrast implements ImageProcessing {
 
     /**
      * This override method uses the Windows/level method to change an image contrast.
-     * @param originalImg is used as parameter.
+     * @param src is used as parameter.
      * @return pixel matrix is returned by function.
      */
     @Override
-    public IntBuffer processImage(IntBuffer originalImg, int w, int h) {
+    public void processImage(int[] src, int[] dst, int w, int h) {
         // TODO
 //        int[][] matrix = new int[originalImg.length][originalImg[0].length];
 //
@@ -35,6 +35,5 @@ public class ChangeContrast implements ImageProcessing {
 //                matrix[y][x] = algorithm.adjustLevel(originalImg[y][x]);
 //            }
 //        }
-        return originalImg;
     }
 }

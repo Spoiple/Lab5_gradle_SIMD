@@ -43,11 +43,11 @@ public class MirrorImage implements ImageProcessing {
 
     /**
      * This override method creates an array according to the instance setup. 
-     * @param originalImg the array of pixels to process
+     * @param src the array of pixels to process
      * @return an pixel matrix.
      */
     @Override
-    public IntBuffer processImage(IntBuffer originalImg, int w, int h) {
+    public void processImage(int[] src, int[] dst, int w, int h) {
         // TODO
 //        int[][] matrix = new int[originalImg.length][originalImg[0].length];
 //        int width = originalImg.length;
@@ -58,7 +58,6 @@ public class MirrorImage implements ImageProcessing {
 //                matrix[x][y] = orientation.mirror(originalImg, x, y);
 //            }
 //        }
-        return originalImg;
     }
 
     /**

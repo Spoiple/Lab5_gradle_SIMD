@@ -6,7 +6,6 @@
 JNIEXPORT void JNICALL
 Java_he1027_1lab5_HelloWorld_print5(JNIEnv *env, jobject obj, jintArray arr, jintArray dstArr, jint window, jint level)
 {
-
 //    clock_t start, end;
 //    double cpu_time_used;
 //    start = clock();

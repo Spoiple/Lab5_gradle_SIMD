@@ -12,10 +12,9 @@ import java.nio.IntBuffer;
  */
 public class ImageProcessingModel {
     private Image rawImage, processedImage, previewImage;
-    private int[][] matrix;
-    private IntBuffer buffer;
+    private int[] srcImgArr, processedImgArray;
     private Histogram histogram;
-    private int w, h; // TODO: behöver bara ena, kan göra array.length / w = h
+    private int w, h;
 
     /**
      * Creates a new ImageProcessingModel with the supplied image as the base image
@@ -50,7 +49,8 @@ public class ImageProcessingModel {
         w = (int) image.getWidth();
         h = (int) image.getHeight();
         rawImage = image;
-        buffer = ImagePixelMatrixConverter.getPixelMatrix(rawImage);
+        srcImgArr = ImagePixelMatrixConverter.getPixelMatrix(rawImage).array();
+        processedImgArray = new int[w*h];
         processedImage = null;
         createHistogram();
     }
@@ -98,7 +98,7 @@ public class ImageProcessingModel {
      */
     public void applyProcessing() {
         processedImage = previewImage;
-        buffer = ImagePixelMatrixConverter.getPixelMatrix(processedImage);
+        processedImgArray = ImagePixelMatrixConverter.getPixelMatrix(processedImage).array();
     }
     /**
      * Processes the image with the supplied ImageProcessing object.
@@ -112,7 +112,8 @@ public class ImageProcessingModel {
             throw new NullPointerException("No image has been added to model");
         if (processedImage == null)
             processedImage = rawImage;
-        previewImage = ImagePixelMatrixConverter.getImage(processing.processImage(buffer, w, h), w, h);
+        processing.processImage(srcImgArr, processedImgArray, w, h);
+        previewImage = ImagePixelMatrixConverter.getImage(IntBuffer.wrap(processedImgArray), w, h);
     }
     /**
      * Get processed image

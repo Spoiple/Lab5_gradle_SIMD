@@ -2,7 +2,6 @@ package he1027_lab5.model.ContrastWindowLevel;
 
 import he1027_lab5.model.ImageProcessing;
 
-import java.nio.IntBuffer;
 
 /**
  * ChangeContrast implements the interface ImageProcessing.
@@ -24,18 +23,18 @@ public class ChangeContrastMultithreaded implements ImageProcessing {
     }
     /**
      * This override method uses the Windows/level method to change an image contrast.
-     * @param originalImg is used as parameter.
+     * @param src is used as parameter.
      * @return pixel matrix is returned by function.
      */
     @Override
-    public IntBuffer processImage(IntBuffer originalImg, int w, int h) {
+    public void processImage(int[] src, int[] dst, int w, int h) {
 
         long time = System.currentTimeMillis();
 //        int[][] matrix = new int[originalImg.length][originalImg[0].length];
-        IntBuffer result = IntBuffer.allocate(w*h);
+//        IntBuffer result = IntBuffer.allocate(w*h);
         Thread[] threads = new Thread[noOfThreads];
         for (int i = 0; i < noOfThreads; i++) {
-            threads[i] = new Thread(new PartialPixelMatrixProcessing(result, originalImg, i, noOfThreads, w, h));
+            threads[i] = new Thread(new PartialPixelMatrixProcessing(src, dst, i, noOfThreads, w, h));
         }
         for (Thread thread : threads) {
             thread.start();
@@ -48,18 +47,17 @@ public class ChangeContrastMultithreaded implements ImageProcessing {
 
         }
         System.out.println(System.currentTimeMillis() - time);
-        return result;
     }
 
     private class PartialPixelMatrixProcessing implements Runnable {
-        private final IntBuffer result, originalImg;
         private final int index, n, w, h;
+        private final int[] src, dst;
 
-        public PartialPixelMatrixProcessing(IntBuffer result, IntBuffer originalImg, int index, int n, int w, int h) {
+        public PartialPixelMatrixProcessing(int[] src, int[] dst, int index, int n, int w, int h) {
             this.w = w;
             this.h = h;
-            this.result = result;
-            this.originalImg = originalImg;
+            this.src = src;
+            this.dst = dst;
             this.index = index;
             this.n = n;
         }
@@ -69,7 +67,7 @@ public class ChangeContrastMultithreaded implements ImageProcessing {
             int yEnd = yStart + (w*h) / n;
             for (int i = yStart; i < yEnd; i++) {
                 // TODO: plocka ut array i lokal variabel först?
-                result.array()[i] = algorithm.adjustLevel(originalImg.array()[i]);
+                dst[i] = algorithm.adjustLevel(src[i]);
             }
 //            for (int y = yStart; y < yEnd; y++) {
 //                for (int x = 0; x < matrix[0].length; x++) {
