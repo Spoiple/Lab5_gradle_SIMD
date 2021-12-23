@@ -52,13 +52,13 @@ repositories {
 //}
 
 javafx{
-    modules = [ 'javafx.controls', 'javafx.base', 'javafx.graphics' ]
+    modules = [ 'javafx.controls', 'javafx.base', 'javafx.graphics', 'javafx.swing' ]
 }
 
 //test.dependsOn  ':hello:linkDebug'
 
 mainClassName = 'he1027_lab5.Main'
 run {
-    systemProperty "java.library.path", file("${project(":hello").buildDir}/lib/main/debug").absolutePath
+    systemProperty "java.library.path", file("${project(":CFunctionsLib").buildDir}/lib/main/debug").absolutePath
 }
-run.dependsOn ':hello:linkDebug'
+run.dependsOn ':CFunctionsLib:linkDebug'

@@ -2,8 +2,6 @@ package he1027_lab5.model.ContrastWindowLevel;
 
 import he1027_lab5.model.ImageProcessing;
 
-import java.nio.IntBuffer;
-
 /**
  * ChangeContrast implements the interface ImageProcessing.
  */
@@ -27,13 +25,8 @@ public class ChangeContrast implements ImageProcessing {
      */
     @Override
     public void processImage(int[] src, int[] dst, int w, int h) {
-        // TODO
-//        int[][] matrix = new int[originalImg.length][originalImg[0].length];
-//
-//        for (int y = 0; y < originalImg.length; y++) {
-//            for (int x = 0; x < originalImg[0].length; x++) {
-//                matrix[y][x] = algorithm.adjustLevel(originalImg[y][x]);
-//            }
-//        }
+        for (int i = 0; i < w*h; i++) {
+            dst[i] = algorithm.adjustLevel(src[i]);
+        }
     }
 }

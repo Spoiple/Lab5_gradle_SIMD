@@ -1,6 +1,6 @@
 package he1027_lab5.model.ContrastWindowLevel;
 
-import he1027_lab5.HelloWorld;
+import he1027_lab5.AVX_Contrast;
 import he1027_lab5.model.ImageProcessing;
 
 
@@ -14,11 +14,12 @@ public class SIMDChangeContrast implements ImageProcessing {
     }
 
     @Override
-    public void processImage(int[] src, int[] dst, int w, int h) {
-
+    public void processImage(int[] src, int[] dst, int w, int h) throws IllegalArgumentException {
+        if (src.length != dst.length)
+            throw new IllegalArgumentException("src and dst array must be of equal length");
         long time = System.currentTimeMillis();
         // TODO: Crash with window = 0
-        new HelloWorld().print5(src, dst, window, level);
+        new AVX_Contrast().simd8x(src, dst, window, level);
         System.out.println(System.currentTimeMillis() - time);
 
     }

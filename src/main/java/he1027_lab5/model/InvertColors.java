@@ -1,6 +1,5 @@
 package he1027_lab5.model;
 
-import java.nio.IntBuffer;
 
 /**
  * Class Implements the interface ImageProcessing.

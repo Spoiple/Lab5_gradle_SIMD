@@ -31,6 +31,7 @@ library {
         if (toolChain instanceof VisualCpp) {
             compileTask.compilerArgs.addAll(["/TC"])
         } else if (toolChain instanceof GccCompatibleToolChain) {
+//            compileTask.compilerArgs.addAll(["-x", "c", "-mavx2", "-O3", "-S", "-march=native"]) // Produce assembler
             compileTask.compilerArgs.addAll(["-x", "c", "-std=c11", "-mavx2", "-O3", "-march=native"])
         }
     }

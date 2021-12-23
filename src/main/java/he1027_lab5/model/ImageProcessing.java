@@ -8,9 +8,12 @@ package he1027_lab5.model;
 public interface ImageProcessing {
     /**
      * Applies processing an array of pixel-values
-     * @param src the array of pixels to process
-     * @return the processed array of pixel
+     * @param src
+     * @param dst
+     * @param w
+     * @param h
+     * @throws IllegalArgumentException
      */
-    void processImage(int[] src, int[] dst, int w, int h);
+    void processImage(int[] src, int[] dst, int w, int h) throws IllegalArgumentException;
     // TODO: exception if src and dst is different size
 }

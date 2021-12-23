@@ -41,6 +41,12 @@ public class MainView extends VBox {
             this.getChildren().add(new InvertColorView(model));
         });
 
+        MenuItem blurImage = new MenuItem("Blur Image");
+        blurImage.setOnAction(a -> {
+            clearView();
+            this.getChildren().add(new BlurView(model));
+        });
+
         MenuItem adjustContras = new MenuItem("Adjust contrast");
         adjustContras.setOnAction(a -> {
             clearView();
@@ -66,6 +72,7 @@ public class MainView extends VBox {
         });
 
         generateMenu.getItems().add(invertColors);
+        generateMenu.getItems().add(blurImage);
         generateMenu.getItems().add(adjustContras);
         generateMenu.getItems().add(mirrorImage);
         generateMenu.getItems().add(histogram);

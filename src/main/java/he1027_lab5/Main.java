@@ -1,7 +1,6 @@
 package he1027_lab5;
 
 import he1027_lab5.model.ImageProcessingModel;
-import he1027_lab5.model.ThreadPool;
 import he1027_lab5.view.MainView;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -16,7 +15,7 @@ public class Main extends Application {
         MainView mainView = new MainView(new ImageProcessingModel());
 //        mainView.setMinWidth(600);
         Scene scene = new Scene(mainView, 800, 550);
-        stage.setOnCloseRequest(event -> ThreadPool.getThreadPool().shutdown());
+        stage.setOnCloseRequest(event -> ThreadPool.shutDown());
         stage.setMinWidth(800);
         stage.setMinHeight(550);
         stage.setTitle("PhotoEditor 2021!");

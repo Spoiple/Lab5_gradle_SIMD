@@ -1,6 +1,5 @@
 package he1027_lab5.model;
 
-import java.nio.IntBuffer;
 
 /**
  * Class implements interface ImageProcessing.
@@ -47,11 +46,17 @@ public class MirrorImage implements ImageProcessing {
      * @return an pixel matrix.
      */
     @Override
-    public void processImage(int[] src, int[] dst, int w, int h) {
+    public void processImage(int[] src, int[] dst, int w, int h) throws IllegalArgumentException {
+        if (src.length != dst.length)
+            throw new IllegalArgumentException("src and dst array must be of equal length");
         // TODO
 //        int[][] matrix = new int[originalImg.length][originalImg[0].length];
 //        int width = originalImg.length;
 //        int height = originalImg[0].length;
+        orientation.mirror(src, dst, w);
+//        for (int i = 0; i < w*h; i++) {
+//            dst[i] = orientation.mirror(src[i], i%w, i/w);
+//        }
 //
 //        for (int x = 0; x < width; x++) {
 //            for (int y = 0; y < height; y++) {
@@ -69,27 +74,34 @@ public class MirrorImage implements ImageProcessing {
     }
 
     private abstract static class MirrorOrientation {
-        abstract int mirror(int[][] originalImg, int x, int y);
+        abstract void mirror(int[] src, int[] dst, int w);
     }
 
     private static class VerticalMirror extends MirrorOrientation {
         @Override
-        public int mirror(int[][] originalImg, int x, int y) {
-            return originalImg[originalImg.length-1-x][y]; // vertical
+        void mirror(int[] src, int[] dst, int w) {
+            for (int i = 0; i < src.length; i++) {
+                dst[i] = src[(((src.length - 1) - i ) / w) * w + (i%w)];
+            }
         }
     }
 
     private static class HorizontalMirror extends MirrorOrientation {
         @Override
-        public int mirror(int[][] originalImg, int x, int y) {
-            return originalImg[x][originalImg[0].length-1 - y]; // horizontal
+        public void mirror(int[] src, int[] dst, int w) {
+            for (int i = 0; i < src.length; i++) {
+                dst[i] = src[ (i / w) * w + (w - 1) - (i % w) ];
+            }
         }
     }
 
     private static class VerticalHorizontalMirror extends MirrorOrientation {
         @Override
-        public int mirror(int[][] originalImg, int x, int y) {
-            return originalImg[originalImg.length-1 - x][originalImg[0].length-1 - y]; // vertical + horizontal
+        public void mirror(int[] src, int[] dst, int w) {
+            for (int i = 0; i < src.length; i++) {
+                int i1 = (((src.length - 1) - i) / w) * w + (i % w);
+                dst[i] = src[ (i1 / w) * w + (w - 1) - (i1 % w) ];
+            }
         }
     }
 }

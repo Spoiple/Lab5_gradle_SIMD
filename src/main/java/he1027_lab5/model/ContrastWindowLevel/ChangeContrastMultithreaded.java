@@ -1,6 +1,11 @@
 package he1027_lab5.model.ContrastWindowLevel;
 
 import he1027_lab5.model.ImageProcessing;
+import he1027_lab5.ThreadPool;
+
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadPoolExecutor;
 
 
 /**
@@ -8,18 +13,28 @@ import he1027_lab5.model.ImageProcessing;
  */
 public class ChangeContrastMultithreaded implements ImageProcessing {
 
-    private final int noOfThreads;
-    private final WindowLevelContrastAlgorithm algorithm;
+    private static int noOfThreads;
+    protected CountDownLatch latch;
+    private static WindowLevelContrastAlgorithm algorithm;
+    private static final ThreadPoolExecutor tp = new ThreadPoolExecutor(8, 8,
+                           120,
+                                        java.util.concurrent.TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(8));;
+    private static ChangeContrastMultithreaded ccm; // TODO: ?
 
-    /**
-     * Creates multithreaded instance of Window / Level contrast adjustment image processing implementation
-     * @param window window size
-     * @param level value of level
-     * @param n number of threads to use
-     */
-    public ChangeContrastMultithreaded(int window, int level, int n) {
+    private ChangeContrastMultithreaded() {
+        ThreadPool.addToPool(tp);
+//        this.tp = new ThreadPoolExecutor(8, 8,
+//                120, java.util.concurrent.TimeUnit.SECONDS,
+//                new ArrayBlockingQueue<>(4));
+    }
+
+    public static ChangeContrastMultithreaded SetChangeContrastMultithreaded(int window, int level, int n) {
+        if (ccm == null)
+            ccm = new ChangeContrastMultithreaded();
         algorithm = new WindowLevelContrastAlgorithm(window, level);
-        this.noOfThreads = n;
+        noOfThreads = n;
+        return ccm;
     }
     /**
      * This override method uses the Windows/level method to change an image contrast.
@@ -32,19 +47,28 @@ public class ChangeContrastMultithreaded implements ImageProcessing {
         long time = System.currentTimeMillis();
 //        int[][] matrix = new int[originalImg.length][originalImg[0].length];
 //        IntBuffer result = IntBuffer.allocate(w*h);
-        Thread[] threads = new Thread[noOfThreads];
-        for (int i = 0; i < noOfThreads; i++) {
-            threads[i] = new Thread(new PartialPixelMatrixProcessing(src, dst, i, noOfThreads, w, h));
-        }
-        for (Thread thread : threads) {
-            thread.start();
-        }
-        try {
-            for (Thread thread : threads) {
-                thread.join();
-            }
-        } catch (Exception e) {
+//        Thread[] threads = new Thread[noOfThreads];
 
+        latch = new CountDownLatch(noOfThreads);
+        for (int i = 0; i < noOfThreads; i++) {
+            tp.execute(new PartialPixelMatrixProcessing(src, dst, i, noOfThreads, w, h));
+//            threads[i] = new Thread(new PartialPixelMatrixProcessing(src, dst, i, noOfThreads, w, h));
+        }
+//        for (Thread thread : threads) {
+//            thread.start();
+//        }
+//        try {
+//            for (Thread thread : threads) {
+//                thread.join();
+//            }
+//        } catch (Exception e) {
+//
+//        }
+        try {
+            latch.await();
+        } catch (Exception e) {
+            System.out.println("latch await failed");
+            e.printStackTrace();
         }
         System.out.println(System.currentTimeMillis() - time);
     }
@@ -63,12 +87,14 @@ public class ChangeContrastMultithreaded implements ImageProcessing {
         }
         @Override
         public void run() {
+            long time = System.currentTimeMillis();
             int yStart = index * (w*h) / n;
             int yEnd = yStart + (w*h) / n;
             for (int i = yStart; i < yEnd; i++) {
-                // TODO: plocka ut array i lokal variabel först?
                 dst[i] = algorithm.adjustLevel(src[i]);
             }
+            System.out.println(System.currentTimeMillis() - time + " ms thread: " + index);
+            latch.countDown();
 //            for (int y = yStart; y < yEnd; y++) {
 //                for (int x = 0; x < matrix[0].length; x++) {
 //                    matrix[y][x] = algorithm.adjustLevel(originalImg[y][x]);

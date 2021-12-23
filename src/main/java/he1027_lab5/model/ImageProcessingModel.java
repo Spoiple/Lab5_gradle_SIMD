@@ -98,7 +98,7 @@ public class ImageProcessingModel {
      */
     public void applyProcessing() {
         processedImage = previewImage;
-        processedImgArray = ImagePixelMatrixConverter.getPixelMatrix(processedImage).array();
+        srcImgArr = ImagePixelMatrixConverter.getPixelMatrix(processedImage).array();
     }
     /**
      * Processes the image with the supplied ImageProcessing object.
@@ -136,6 +136,7 @@ public class ImageProcessingModel {
      */
     public void resetModel() {
         processedImage = rawImage;
+        srcImgArr = ImagePixelMatrixConverter.getPixelMatrix(rawImage).array();
         histogram = new Histogram(processedImage);
     }
     /**

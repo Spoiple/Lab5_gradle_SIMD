@@ -54,10 +54,8 @@ public class ContrastAdjustmentView extends VBox {
         Label multiThreadLabel = new Label("Multithreading");
         noOfThreadsComboBox = new ComboBox<>();
         noOfThreadsComboBox.setPromptText("Extra threads");
-        noOfThreadsComboBox.getItems().add(0);
-        noOfThreadsComboBox.getItems().add(1);
-        noOfThreadsComboBox.getItems().add(2);
-        noOfThreadsComboBox.getItems().add(4);
+        for (int i = 0; i < 9; i++)
+            noOfThreadsComboBox.getItems().add(i);
         VBox multithreading = new VBox(multiThreadLabel, noOfThreadsComboBox);
 
         VBox window = new VBox(windowSliderLabel, windowSlider);

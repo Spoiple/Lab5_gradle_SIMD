@@ -5,7 +5,11 @@ import he1027_lab5.view.MainView;
 import javafx.scene.image.Image;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
+import javafx.embed.swing.SwingFXUtils;
 
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class MainViewController {
@@ -32,19 +36,19 @@ public class MainViewController {
     }
 
     public void handleSave() throws NullPointerException {
-//        FileChooser fileChooser = new FileChooser();
-//        fileChooser.getExtensionFilters().addAll(
-//                new FileChooser.ExtensionFilter("PNG", "*.png"),
-//                new FileChooser.ExtensionFilter("JPG", "*.jpg")
-//        );
-//        File file = fileChooser.showSaveDialog(new Popup());
-//        if (file != null) {
-//            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(model.getProcessedImage(), null);
-//            try {
-//                ImageIO.write(bufferedImage, fileChooser.getSelectedExtensionFilter().getExtensions().get(0).replace("*.", ""), file);
-//            } catch (Exception e) {
-//                view.showAlert(e.getMessage());
-//            }
-//        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("PNG", "*.png"),
+                new FileChooser.ExtensionFilter("JPG", "*.jpg")
+        );
+        File file = fileChooser.showSaveDialog(new Popup());
+        if (file != null) {
+            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(model.getProcessedImage(), null);
+            try {
+                ImageIO.write(bufferedImage, fileChooser.getSelectedExtensionFilter().getExtensions().get(0).replace("*.", ""), file);
+            } catch (Exception e) {
+                view.showAlert(e.getMessage());
+            }
+        }
     }
 }

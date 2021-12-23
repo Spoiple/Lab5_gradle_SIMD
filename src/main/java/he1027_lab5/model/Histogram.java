@@ -6,25 +6,23 @@ import javafx.scene.image.Image;
  * Class for a Histogram.
  */
 public class Histogram {
-    private int[][] histogram; // TODO
+    private int[][] histogram;
 
     /**
      * Constructor for a Histogram.
      * @param image is a parameter for this constructor.
      */
     public Histogram(Image image) {
-//        histogram = createHistogram(ImagePixelMatrixConverter.getPixelMatrix(image));
+        histogram = createHistogram(ImagePixelMatrixConverter.getPixelMatrix(image).array());
     }
 
-    private int[][] createHistogram(int[][] pixelMatrix) {
-        int[][]  result = new int[3][256];
+    private int[][] createHistogram(int[] pixelArray) {
+        int[][] result = new int[3][256];
         for (int i = 0; i < result.length; i++) {
-            for (int x = 0; x < pixelMatrix.length; x++) {
-                for (int y = 0; y < pixelMatrix[0].length; y++) {
-                    result[i][(pixelMatrix[x][y] >> 8*(2-i)) & 0x000000FF]++;
+            for (int j = 0; j < pixelArray.length; j++) {
+                    result[i][(pixelArray[j] >> 8*(2-i)) & 0x000000FF]++;
                 }
             }
-        }
         return result;
     }
 
