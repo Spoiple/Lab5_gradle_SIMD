@@ -119,17 +119,17 @@ Java_he1027_1lab5_AVX_1Contrast_simd8x(JNIEnv *env, jobject obj, jintArray arr, 
     for (int i = 0; i < len/8; i++) {
         pixel = _mm256_load_si256( &array[i*8] );
 
-        // Mask and set bits with value below level
+        // Mask and set byte with value below level
         levelMask = _mm256_max_epu8( pixel, mLevel );
         levelMask = _mm256_cmpeq_epi8( pixel, levelMask );
         result = _mm256_and_si256( pixel, levelMask );
 
-        // Mask and set bits with value above window
+        // Mask and set byte with value above window
         windowMask = _mm256_max_epu8( pixel, mWindow );
         windowMask = _mm256_cmpeq_epi8( pixel, windowMask );
         result = _mm256_or_si256( result, windowMask );
 
-        // Mask bits for multiplication
+        // Mask bytes for multiplication
         wiLeXOr = _mm256_xor_si256( levelMask, windowMask );
 
         // Prepare contrast change by - level
@@ -139,7 +139,7 @@ Java_he1027_1lab5_AVX_1Contrast_simd8x(JNIEnv *env, jobject obj, jintArray arr, 
         // clear targeted pixels
         result = _mm256_and_si256( result, ~wiLeXOr );
 
-        // Extract 4 bits for multiplication  // Can skip and only adjust 4 pixels each loop?
+        // Extract 4 bytes for multiplication  // Can skip and only adjust 4 pixels each loop?
         m128_v0 = _mm256_extracti128_si256 ( tmp, 0 );
         m128_v1 = _mm256_extracti128_si256 ( tmp, 1 );
 

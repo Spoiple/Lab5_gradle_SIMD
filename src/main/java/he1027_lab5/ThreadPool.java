@@ -19,6 +19,10 @@ public class ThreadPool {
             tps.add(t);
     }
 
+    // TODO : ge inte ut threadpoolexecutor.
+    //  extend threadpoolexecutor istället och override execute
+    //  eller på annat vis se till att man kan via statisk metod
+    //  direkt executa tasks
     public static ThreadPoolExecutor getThreadPool() {
         if (tp == null)
             tp = new ThreadPoolExecutor(1,1,120, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200));
