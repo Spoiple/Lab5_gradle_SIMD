@@ -15,17 +15,20 @@ public class MirrorImageController {
 
     public void handleMirror() {
         if (view.isVerticalChecked() && view.isHorizontalChecked()) {
-            model.processImage(MirrorImage.createVerticalHorizontalMirror());
+//            model.addLayer(MirrorImage.createVerticalHorizontalMirror());
+            model.processImage("Vertical and horizontal mirror", MirrorImage.createVerticalHorizontalMirror());
             view.showPreviewImage();
             view.updateStatusText("Mirrored vertically and horizontally");
         }
         else if (view.isVerticalChecked()) {
-            model.processImage(MirrorImage.createVerticalMirror());
+//            model.addLayer(MirrorImage.createVerticalMirror());
+            model.processImage("Vertical mirror" ,MirrorImage.createVerticalMirror());
             view.showPreviewImage();
             view.updateStatusText("Mirrored vertically");
         }
         else if (view.isHorizontalChecked()) {
-            model.processImage(MirrorImage.createHorizontalMirror());
+//            model.addLayer(MirrorImage.createHorizontalMirror());
+            model.processImage("Horizontal mirror", MirrorImage.createHorizontalMirror());
             view.showPreviewImage();
             view.updateStatusText("Mirrored horizontally");
         }

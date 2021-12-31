@@ -1,8 +1,15 @@
 package he1027_lab5.model;
 
+import javafx.collections.ObservableArrayBase;
+import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observable;
 
 /**
  *  Model to process an image using algorithms implemented with the ImageProcessing interface.
@@ -15,18 +22,56 @@ public class ImageProcessingModel {
     private int[] srcImgArr, processedImgArray;
     private Histogram histogram;
     private int w, h;
+//    private List<ImageProcessing> layers;
+//    private List<ImageProcessingInformation> layers;
+    private List<ImageProcessingInformation> layers;
+    private PropertyChangeSupport support;
+    private ImageProcessingInformation pendingChange;
+
+    public class ImageProcessingInformation{
+        private String name;
+        private ImageProcessing ip;
+
+        public ImageProcessingInformation(String name, ImageProcessing ip) {
+            this.name = name;
+            this.ip = ip;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public ImageProcessing getIp() {
+            return ip;
+        }
+    }
 
     /**
      * Creates a new ImageProcessingModel with the supplied image as the base image
      * @param image Image object to process
      */
     public ImageProcessingModel(Image image) {
+        layers = new ArrayList<>();
+        support = new PropertyChangeSupport(layers);
         setImage(image);
     }
+
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        support.addPropertyChangeListener(pcl);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        support.removePropertyChangeListener(pcl);
+    }
+
+
+
     /**
      * Creates a new ImageProcessingModel with the supplied image as the base image
      */
     public ImageProcessingModel() {
+        layers = new ArrayList<>();
+        support = new PropertyChangeSupport(layers);
         this.rawImage = null;
     }
     /**
@@ -99,6 +144,35 @@ public class ImageProcessingModel {
     public void applyProcessing() {
         processedImage = previewImage;
         srcImgArr = ImagePixelMatrixConverter.getPixelMatrix(processedImage).array();
+        layers.add(pendingChange);
+//        addLayer(pendingChange);
+        support.firePropertyChange("layers", this.layers, pendingChange);
+        pendingChange = null;
+        System.out.println("TEST");
+    }
+
+    public void applyProcessing2() {
+        processedImage = previewImage;
+        srcImgArr = ImagePixelMatrixConverter.getPixelMatrix(processedImage).array();
+//        layers.add(pendingChange);
+//        addLayer(pendingChange);
+//        support.firePropertyChange("layers", this.layers, pendingChange);
+//        pendingChange = null;
+        System.out.println("TEST");
+    }
+
+    public void addLayer(String name, ImageProcessing p) {
+        layers.add(new ImageProcessingInformation(name, p));
+//        processImage(p);
+    }
+
+    public void removeLayer(ImageProcessingInformation p) {
+        layers.remove(p);
+        resetModel();
+        for (ImageProcessingInformation layer : layers) {
+            processImage(layer.getName(), layer.getIp());
+            applyProcessing2();
+        }
     }
     /**
      * Processes the image with the supplied ImageProcessing object.
@@ -114,6 +188,17 @@ public class ImageProcessingModel {
             processedImage = rawImage;
         processing.processImage(srcImgArr, processedImgArray, w, h);
         previewImage = ImagePixelMatrixConverter.getImage(IntBuffer.wrap(processedImgArray), w, h);
+        pendingChange = new ImageProcessingInformation("test", processing);
+    }
+
+    public void processImage(String name, ImageProcessing processing) throws NullPointerException {
+        if (rawImage == null)
+            throw new NullPointerException("No image has been added to model");
+        if (processedImage == null)
+            processedImage = rawImage;
+        processing.processImage(srcImgArr, processedImgArray, w, h);
+        previewImage = ImagePixelMatrixConverter.getImage(IntBuffer.wrap(processedImgArray), w, h);
+        pendingChange = new ImageProcessingInformation(name, processing);
     }
     /**
      * Get processed image
@@ -144,5 +229,9 @@ public class ImageProcessingModel {
      */
     public void clearPreview() {
         previewImage = processedImage;
+    }
+
+    public List<ImageProcessingInformation> getLayers() {
+        return layers;
     }
 }

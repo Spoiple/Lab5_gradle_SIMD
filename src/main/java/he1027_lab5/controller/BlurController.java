@@ -16,7 +16,7 @@ public class BlurController {
 
     public void handleBlur(int boxSize) {
         ThreadPool.getThreadPool().execute(() -> {
-            model.processImage(new BlurImage(boxSize));
+            model.processImage("Blur: " + boxSize + " box", new BlurImage(boxSize));
             javafx.application.Platform.runLater(() -> {
                 view.updateFromModel();
                 view.showProcessedImage();

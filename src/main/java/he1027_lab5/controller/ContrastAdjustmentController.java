@@ -34,13 +34,16 @@ public class ContrastAdjustmentController {
         ThreadPool.getThreadPool().execute(() -> {
 //            String info = "";
 //            long time = System.currentTimeMillis();
+            int w = view.getWindowValue();
+            int l = view.getLevelValue();
+            String info = "Contrast, Window: " + w + ", level: " + l;
             if (noOfThreads > 0) {
-                model.processImage(SetChangeContrastMultithreaded(view.getWindowValue(), view.getLevelValue(), noOfThreads));
+                model.processImage(info, SetChangeContrastMultithreaded(w, l, noOfThreads));
 //                time = System.currentTimeMillis() - time;
 //                info += "Java " + noOfThreads + " threads: ";
             }
             else {
-                model.processImage(new SIMDChangeContrast(view.getWindowValue(), view.getLevelValue()));
+                model.processImage(info, new SIMDChangeContrast(w, l));
 //                time = System.currentTimeMillis() - time;
 //                info += "SIMD: ";
             }

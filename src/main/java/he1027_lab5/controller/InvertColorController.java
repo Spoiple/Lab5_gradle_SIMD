@@ -16,7 +16,7 @@ public class InvertColorController {
     public void handleInvertColors() {
         new Thread(() -> {
             {
-                model.processImage(new InvertColors());
+                model.processImage("Invert colors", new InvertColors());
                 javafx.application.Platform.runLater(() -> {
                     view.showProcessedImage();
                     view.updateStatusText("Preview");
